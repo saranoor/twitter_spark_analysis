@@ -3,6 +3,8 @@ from pyspark.sql.functions import *
 from pyspark.sql.types import *
 from pyspark.sql import functions as F
 from textblob import TextBlob
+import time
+
 
 def preprocessing(lines):
     words = lines.select(explode(split(lines.value, "t_end")).alias("word"))
@@ -28,22 +30,53 @@ def text_classification(words):
     subjectivity_detection_udf = udf(subjectivity_detection, StringType())
     words = words.withColumn("subjectivity", subjectivity_detection_udf("word"))
     return words
-
 if __name__ == "__main__":
-    # create Spark session
-    spark = SparkSession.builder.appName("TwitterSentimentAnalysis").getOrCreate()
+    from pyspark.sql import SparkSession
+    from pyspark.sql.functions import explode
+    from pyspark.sql.functions import split
 
-    # read the tweet data from socket
-    lines = spark.readStream.format("socket").option("host", "0.0.0.0").option("port", 5555).load()
-    # Preprocess the data
-    words = preprocessing(lines)
-    # text classification to define polarity and subjectivity
-    words = text_classification(words)
+    spark = SparkSession \
+        .builder \
+        .appName("StructuredNetworkWordCount") \
+        .getOrCreate()
+    # Create DataFrame representing the stream of input lines from connection to localhost:9999
+    lines = spark \
+        .readStream \
+        .format("socket") \
+        .option("host", "localhost") \
+        .option("port", 9999) \
+        .load()
 
-    words = words.repartition(1)
-    query = words.writeStream.queryName("all_tweets")\
-        .outputMode("append").format("parquet")\
-        .option("path", "./parc")\
-        .option("checkpointLocation", "./check")\
-        .trigger(processingTime='60 seconds').start()
+    # Split the lines into words
+    words = lines.select(
+        explode(
+            split(lines.value, " ")
+        ).alias("word")
+    )
+
+    # Generate running word count
+    wordCounts = words.groupBy("word").count()
+    query = wordCounts \
+        .writeStream \
+        .outputMode("complete") \
+        .format("console") \
+        .start()
+
     query.awaitTermination()
+
+
+    # query=words.writeStream.format("console").start()
+    # time.sleep(10)  # sleep 10 seconds
+    # query.stop()
+
+
+
+    #query.awaitTermination()
+
+    # query = words.writeStream.queryName("all_tweets")\
+    #     .format("console")\
+    #     .outputMode("append").format("parquet")\
+    #     .option("path", "./parc")\
+    #     .option("checkpointLocation", "./check")\
+    #     .trigger(processingTime='60 seconds').start()
+    # query.awaitTermination()
