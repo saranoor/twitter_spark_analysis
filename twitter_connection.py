@@ -1,51 +1,63 @@
 import tweepy
 from tweepy import Stream
-from tweepy.streaming import StreamListener
+#from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 import socket
 import json
 
-consumer_key='LovGCp4taXgOGclj9Wum2XEda'
-consumer_secret='d2NhvrqiEhsp8iBBZ1zsN5fl79AOwr0DOktoNqzIC56bK5NCLG'
-access_token ='1323237425498435584-9TGePmcG2nq56MmN71K5jh7TBWd1AX'
-access_secret='nhLAqoCicm4FJXwRw75MeQTeXxRu9L0Us4RqVxXgQP9AQ'
+access_token = "1369013832446849024-625lwAVXaJevwzbKwSZyblcpPe1PHI"
+access_secret = "ts7m7mCa9aTIPtf0PivyW7vc0i665ROtyUhkJQtIQvxV3"
+consumer_key =  "8dzKja6GHdpGpLIrJBdGd7xmn"
+consumer_secret = "BKHSMaLhVF98pfpFJuIWzGA2bPom0un5BSSkcurfyt5Ipp8nw2"
 
-class TweetsListener(StreamListener):
+class TweetsListener(tweepy.Stream):
   # tweet object listens for the tweets
-  def __init__(self, csocket):
-    self.client_socket = csocket
-  def on_data(self, data):
-    try:  
-      msg = json.loads( data )
-      print("new message")
-      # if tweet is longer than 140 characters
-      if "extended_tweet" in msg:
-        # add at the end of each tweet "t_end" 
-        self.client_socket\
-            .send(str(msg['extended_tweet']['full_text']+"t_end")\
-            .encode('utf-8'))         
-        print(msg['extended_tweet']['full_text'])
-      else:
-        # add at the end of each tweet "t_end" 
-        self.client_socket\
-            .send(str(msg['text']+"t_end")\
-            .encode('utf-8'))
-        print(msg['text'])
-      return True
-    except BaseException as e:
-        print("Error on_data: %s" % str(e))
-    return True
-  def on_error(self, status):
-    print(status)
-    return True
+  def __init__(self, *args, csocket):
+    super().__init__(*args)
+    self.client_socket=csocket
+  def on_status(self, status):
+        print(status.id)
+  # def on_data(self, data):
+  #   try:
+  #     msg = json.loads( data )
+  #     print("new message")
+  #     # if tweet is longer than 140 characters
+  #     if "extended_tweet" in msg:
+  #       # add at the end of each tweet "t_end"
+  #       self.client_socket\
+  #           .send(str(msg['extended_tweet']['full_text']+"t_end")\
+  #           .encode('utf-8'))
+  #       print(msg['extended_tweet']['full_text'])
+  #     else:
+  #       # add at the end of each tweet "t_end"
+  #       self.client_socket\
+  #           .send(str(msg['text']+"t_end")\
+  #           .encode('utf-8'))
+  #       print(msg['text'])
+  #     return True
+  #   except BaseException as e:
+  #       print("Error on_data: %s" % str(e))
+  #   return True
+  # def on_error(self, status):
+  #   print(status)
+  #   return True
 
 def sendData(c_socket, keyword):
-  print('start sending data from Twitter to socket')
+  #print('start sending data from Twitter to socket')
   # authentication based on the credentials
-  auth = OAuthHandler(consumer_key, consumer_secret)
-  auth.set_access_token(access_token, access_secret)
+  #auth = OAuthHandler(consumer_key, consumer_secret)
+  #auth.set_access_token(access_token, access_secret)
   # start sending data from the Streaming API 
-  twitter_stream = Stream(auth, TweetsListener(c_socket))
+  access_token = "1369013832446849024-625lwAVXaJevwzbKwSZyblcpPe1PHI"
+  access_secret = "ts7m7mCa9aTIPtf0PivyW7vc0i665ROtyUhkJQtIQvxV3"
+  consumer_key =  "8dzKja6GHdpGpLIrJBdGd7xmn"
+  consumer_secret = "BKHSMaLhVF98pfpFJuIWzGA2bPom0un5BSSkcurfyt5Ipp8nw2"  
+  twitter_stream = TweetsListener(consumer_key,
+  			          consumer_secret,
+  			          access_token,
+  			          access_secret        
+  )
+  twitter_stream.sample()
   twitter_stream.filter(track = keyword, languages=["en"])
 
 if __name__ == "__main__":
