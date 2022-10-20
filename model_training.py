@@ -20,8 +20,12 @@ df.printSchema()
 # data = df.selectExpr("_c0 as target","id","date","flag","user","text")
 df = df.toDF("target", "id", "date", "flag", "user", "text")
 
+### finding out outliers
+
 ### count of null and none values
 df.select([count(when(isnan(c) | col(c).isNull(), True)).alias(c) for c in df.columns]).show()
+
+### replace null values/missing values
 
 ###convert string to datetime
 func = udf(lambda x: datetime.strptime(x, "%a %b %d %H:%M:%S PDT %Y"), DateType())

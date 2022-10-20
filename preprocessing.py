@@ -6,7 +6,8 @@ from pyspark.sql.types import DateType
 from pyspark.ml.feature import StopWordsRemover, Tokenizer, CountVectorizer, VectorAssembler, StringIndexer,IndexToString
 from pyspark.ml import Pipeline
 from pyspark.ml.classification import LogisticRegression
-
+from pyspark.ml.evaluation import BinaryClassificationEvaluator
+from pyspark.mllib.evaluation import MulticlassMetrics
 spark = SparkSession.builder.master("local[1]") \
     .appName("SparkByExamples.com") \
     .getOrCreate()
@@ -67,10 +68,22 @@ va=VectorAssembler(inputCols=['features'],
 model=LogisticRegression(featuresCol='attributes', labelCol='target')
 
 #indextoString
-labelConverter = IndexToString(inputCol="rawPrediction", outputCol="predictedLabel",
+labelConverter = IndexToString(inputCol="prediction", outputCol="predictedLabel",
                                labels=stringIndexer.labels)#creating pipeline
 pipeline=Pipeline().setStages([stringIndexer, tokenizer, remover, cv, va, model, labelConverter])
 pipeline_model=pipeline.fit(df)
 df_transform=pipeline_model.transform(df)
-df_transform.select('attributes', 'target', 'rawPrediction').show()
+df_transform.select('attributes', 'target', 'prediction').show()
 df_transform.show()
+lr_model=pipeline_model.stages[5]
+trainingSummary=lr_model.summary
+#trainingSummary.roc.show(5)
+print("accuracy: " + str(trainingSummary.accuracy))
+evaluator = BinaryClassificationEvaluator(labelCol="target",rawPredictionCol="prediction")
+print("Test Area Under ROC: " + str(evaluator.evaluate(df_transform, {evaluator.metricName: "areaUnderROC"})))
+predictionAndLabels = df_transform.select("prediction","target").rdd
+# Instantiate metrics objects
+multi_metrics = MulticlassMetrics(predictionAndLabels)
+precision_score = multi_metrics.weightedPrecision
+recall_score = multi_metrics.weightedRecall
+print(precision_score, recall_score)
