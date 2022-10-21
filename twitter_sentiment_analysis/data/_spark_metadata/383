@@ -1,0 +1,2 @@
+v1
+{"path":"file:///home/saranoor/Data/spark_project/twitter_sentiment_analysis/twitter_sentiment_analysis/data/part-00000-008c9e41-5f14-4194-9fd9-e084000418c6-c000.snappy.parquet","size":2016,"isDir":false,"modificationTime":1668950426801,"blockReplication":1,"blockSize":33554432,"action":"add"}

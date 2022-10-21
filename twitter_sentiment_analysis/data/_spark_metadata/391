@@ -1,0 +1,3 @@
+v1
+{"path":"file:///home/saranoor/Data/spark_project/twitter_sentiment_analysis/twitter_sentiment_analysis/data/part-00000-8633bae9-d424-47c8-90a4-45f753260c42-c000.snappy.parquet","size":2215,"isDir":false,"modificationTime":1668950434865,"blockReplication":1,"blockSize":33554432,"action":"add"}
+{"path":"file:///home/saranoor/Data/spark_project/twitter_sentiment_analysis/twitter_sentiment_analysis/data/part-00001-569d1899-cf88-47f3-aba9-16d11ff7fca2-c000.snappy.parquet","size":1689,"isDir":false,"modificationTime":1668950434869,"blockReplication":1,"blockSize":33554432,"action":"add"}
