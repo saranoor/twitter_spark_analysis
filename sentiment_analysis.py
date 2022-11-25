@@ -7,19 +7,17 @@ import time
 
 def preprocessing(lines):
     #words = lines.select(explode(split(lines.value,'\n')).alias("word"))
-    lines.withColumn("value", decode("value", 'UTF-8'))
-    lines.withColumn("value", regexp_replace(col("value"), r'\n\r', " "))
-    lines.withColumn("value", regexp_replace(col("value"), r"[\n\r]", " "))
-    lines.withColumn("value", regexp_replace(col("value"), r"[\n\r]", " "))
-    lines.withColumn("value", regexp_replace(col("value"), r"[\n\n]", " "))
-    # words = lines.value.na.replace('', None)
-    # words = words.na.drop()
-    # words = words.withColumn('word', F.regexp_replace('word', r'http\S+', ''))
-    # words = words.withColumn('word', F.regexp_replace('word', '@\w+', ''))
-    # words = words.withColumn('word', F.regexp_replace('word', '#', ''))
-    # words = words.withColumn('word', F.regexp_replace('word', 'RT', ''))
-    # words = words.withColumn('word', F.regexp_replace('word', ':', ''))
-    return lines
+    df=lines.withColumn("value", decode("value", 'UTF-8'))
+    df=df.withColumn("value", regexp_replace(col("value"), r'\n\r', " "))
+    df=df.withColumn("value", regexp_replace(col("value"), r"[\n\r]", " "))
+    df=df.withColumn("value", regexp_replace(col("value"), r"[\n\r]", " "))
+    df=df.withColumn("value", regexp_replace(col("value"), r"[\n\n]", " "))
+    df = df.withColumn('value', F.regexp_replace('value', r'http\S+', ''))
+    df=df.withColumn('value', F.regexp_replace('value', '@\w+', ''))
+    df=df.withColumn('value', F.regexp_replace('value', '#', ''))
+    df=df.withColumn('value', F.regexp_replace('value', 'RT', ''))
+    df=df.withColumn('value', F.regexp_replace('value', ':', ''))
+    return df
 
 # text classification
 def polarity_detection(text):
@@ -64,18 +62,12 @@ if __name__ == "__main__":
     query =words\
         .writeStream \
         .outputMode("append") \
-        .format("parquet") \
-        .option("path", "output/filesink_output") \
-        .option("checkpointLocation", "/tmp/destination/checkpointLocation")\
+        .trigger(processingTime='50 seconds') \
+        .format("csv") \
+        .option("path", "output/filesink") \
+        .option("checkpointLocation", "/tmp/destination/checkpoint")\
         .start()
 
-    # query=words\
-    #         .writeStream \
-    #         .outputMode("append") \
-    #         .format("parquet") \
-    #         .option("checkpointLocation", "/tmp/destination/checkpointLocation")\
-    #         .option("path", "twitter_sentiment_analysis/data")\
-    #         .start()
     #time.sleep(100)
-    query.awaitTermination(120)
+    query.awaitTermination(60)
     query.stop()
