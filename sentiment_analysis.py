@@ -17,6 +17,7 @@ def preprocessing(lines):
     df=df.withColumn('value', F.regexp_replace('value', '#', ''))
     df=df.withColumn('value', F.regexp_replace('value', 'RT', ''))
     df=df.withColumn('value', F.regexp_replace('value', ':', ''))
+    df = df.withColumn('value', F.regexp_replace('value', '\"', ''))
     return df
 
 # text classification
