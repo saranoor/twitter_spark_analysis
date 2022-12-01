@@ -18,16 +18,11 @@ def preprocessing(lines):
     df = df.withColumn('value', F.regexp_replace('value', 'RT', ''))
     df = df.withColumn('value', F.regexp_replace('value', ':', ''))
     df = df.withColumn('value', F.regexp_replace('value', '\"', ''))
-    pattern = re.compile(pattern = "["
-        u"\U0001F600-\U0001F64F"  # emoticons
-        u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-        u"\U0001F680-\U0001F6FF"  # transport & map symbols
-        u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-                           "]+", flags = re.UNICODE)
-    df = df.withColumn('value', F.regexp_replace('value', pattern, ' '))
-    # df_mod=df.withColumn('id',split(df.value, ',', 2).getItem(0))\
-    #         .withColumn('text', split(df.value, ',', 2).getItem(1))
-    # df_mod=df_mod.withColumn("text", encode("text", 'utf-8'))
+    df=df.withColumn("value", F.regexp_replace('value',r'[^A-Za-z0-9,]+',' '))
+    df=df.withColumn('id',split(df.value, ',', 2).getItem(0))\
+              .withColumn('text', split(df.value, ',', 2).getItem(1))
+    # #df_mod=df_mod.withColumn("clean_text", F.regexp_replace('text','[^a-zA-Z]+',' '))
+
 
     return df
 # text classification
@@ -67,11 +62,13 @@ if __name__ == "__main__":
     query =words\
         .writeStream \
         .outputMode("append") \
-        .trigger(processingTime='200 seconds') \
+        .trigger(processingTime='30 seconds') \
         .format("csv") \
-        .option("path", "output/filesink_2") \
-        .option("checkpointLocation", "/tmp/destination/checkpoint_2")\
+        .option("header", "true") \
+        .option("quoteALL", "true")\
+        .option("path", "output/filesink_4") \
+        .option("checkpointLocation", "/tmp/destination/checkpoint_4")\
         .start()
 
-    query.awaitTermination(260)
+    query.awaitTermination(30)
     query.stop()
