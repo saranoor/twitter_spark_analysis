@@ -10,7 +10,7 @@ from pyspark.ml.classification import LogisticRegression
 spark = SparkSession.builder.master("local[1]") \
     .appName("SparkByExamples.com") \
     .getOrCreate()
-csv_PATH = "/home/saranoor/Data/spark_project/twitter_sentiment_analysis/Data/training.1600000.processed.noemoticon.csv"
+csv_PATH = "Data_Model_Training/training/training.1600000.processed.noemoticon.csv"
 df = spark.read. \
     option('headers', True). \
     option('inferSchema', True). \
