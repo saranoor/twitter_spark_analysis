@@ -16,7 +16,7 @@ class ModelTraining():
         self.spark = SparkSession.builder.master("local[1]") \
             .appName("SparkByExamples.com") \
             .getOrCreate()
-        self.csv_PATH = "/home/saranoor/Data/spark_project/twitter_sentiment_analysis/Data/twitter_training.csv"
+        self.csv_PATH = "/home/saranoor/Data/spark_project/twitter_sentiment_analysis/Data_Model_Training/training_n_validation/twitter_training.csv"
         self.model_path= '/home/saranoor/Data/spark_project/twitter_sentiment_analysis/Models/'
 
     def read_data(self, PATH, type):
@@ -127,7 +127,7 @@ class ModelTraining():
         pipeline_model.write().overwrite().save(self.model_path+'pyspark-log-reg-model')
 
     def evaluation(self):
-        self.read_data('/home/saranoor/Data/spark_project/twitter_sentiment_analysis/Data/twitter_validation.csv', 'test')
+        self.read_data("/home/saranoor/Data/spark_project/twitter_sentiment_analysis/Data_Model_Training/training_n_validation/twitter_validation.csv", 'test')
         load_model = PipelineModel.load(self.model_path+'pyspark-log-reg-model')
         self.cleaning('test')
         self.df_test_transform = load_model.transform(self.df_test)
