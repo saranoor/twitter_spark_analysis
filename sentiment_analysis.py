@@ -5,6 +5,7 @@ from pyspark.sql import functions as F
 from textblob import TextBlob
 import time
 import re
+from Scripts.preprocessing import ModelTraining
 def preprocessing(lines):
     # words = lines.select(explode(split(lines.value,'\n')).alias("word"))
     df = lines.withColumn("value", decode("value", 'UTF-8'))
@@ -46,6 +47,7 @@ if __name__ == "__main__":
     from pyspark.sql.functions import explode
     from pyspark.sql.functions import split
 
+    model = ModelTraining()
     spark = SparkSession \
         .builder \
         .appName("StructuredNetworkWordCount") \
@@ -59,16 +61,25 @@ if __name__ == "__main__":
         .load()
     words=preprocessing(lines)
     words.printSchema()
-    query =words\
+    model.set_spark_data(words)
+    df_transform_words=model.evaluation()
+    df_transform_words.select('value', 'id', 'text', 'rawPrediction', 'probability', 'prediction', 'predictedLabel')
+    df_transform_words.printSchema()
+    # query =    df_transform_words.select('value', 'id', 'text', 'rawPrediction', 'probability', 'prediction', 'predictedLabel')\
+    #     .writeStream \
+    #     .outputMode("append") \
+    #     .trigger(processingTime='30 seconds') \
+    #     .format("csv") \
+    #     .option("header", "true") \
+    #     .option("quoteALL", "true")\
+    #     .option("path", "output/filesink_5") \
+    #     .option("checkpointLocation", "/tmp/destination/checkpoint_5")\
+    #     .start()
+    query =df_transform_words\
         .writeStream \
-        .outputMode("append") \
-        .trigger(processingTime='30 seconds') \
-        .format("csv") \
-        .option("header", "true") \
-        .option("quoteALL", "true")\
-        .option("path", "output/filesink_4") \
-        .option("checkpointLocation", "/tmp/destination/checkpoint_4")\
+        .outputMode("update") \
+        .trigger(processingTime='10 seconds')\
+        .format("console") \
         .start()
-
     query.awaitTermination(30)
     query.stop()

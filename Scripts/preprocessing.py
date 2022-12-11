@@ -54,6 +54,8 @@ class ModelTraining():
                 option("inferSchema", 'true').\
                 csv('/home/saranoor/Data/spark_project/twitter_sentiment_analysis/output/filesink_4/spark_data.csv')
 
+    def set_spark_data(self, data):
+        self.df_spark=data
     def cleaning(self, type):
         if type == 'train':
             # data = self.df.selectExpr("_c0 as target","id","date","flag","user","text")
@@ -92,7 +94,7 @@ class ModelTraining():
             # removing extra spaces
             self.df_test = self.df_test.withColumn("text", regexp_replace(col("text"), r"\s\s+", ' '))
 
-        elif type == 'spark':
+        if type == 'spark':
             self.df_spark = self.df_spark.na.drop()
             self.df_spark = self.df_spark.withColumn("text", lower(col("text")))
             self.df_spark = self.df_spark.withColumn("text", regexp_replace(col("text"), r'[^a-z0-9]', ' '))
@@ -167,6 +169,7 @@ class ModelTraining():
         # print('Precision and Recall are:',precision_score, recall_score)
 
         # testing on twitter data stored through SPARK
-        self.cleaning('spark')
+        #self.cleaning('spark')
         self.df_spark_transform = load_model.transform(self.df_spark)
-        self.df_spark_transform.select('prediction').show()
+        #self.df_spark_transform.select('prediction').show()
+        return self.df_spark_transform
