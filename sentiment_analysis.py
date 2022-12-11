@@ -65,16 +65,16 @@ if __name__ == "__main__":
     df_transform_words=model.evaluation()
     df_transform_words.select('value', 'id', 'text', 'rawPrediction', 'probability', 'prediction', 'predictedLabel')
     df_transform_words.printSchema()
-    # query =    df_transform_words.select('value', 'id', 'text', 'rawPrediction', 'probability', 'prediction', 'predictedLabel')\
-    #     .writeStream \
-    #     .outputMode("append") \
-    #     .trigger(processingTime='30 seconds') \
-    #     .format("csv") \
-    #     .option("header", "true") \
-    #     .option("quoteALL", "true")\
-    #     .option("path", "output/filesink_5") \
-    #     .option("checkpointLocation", "/tmp/destination/checkpoint_5")\
-    #     .start()
+    query = words\
+        .writeStream \
+        .outputMode("append") \
+        .trigger(processingTime='30 seconds') \
+        .format("csv") \
+        .option("header", "true") \
+        .option("quoteALL", "true")\
+        .option("path", "output/filesink_5") \
+        .option("checkpointLocation", "/tmp/destination/checkpoint_5")\
+        .start()
     query =df_transform_words\
         .writeStream \
         .outputMode("update") \
